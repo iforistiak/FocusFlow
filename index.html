@@ -3,293 +3,441 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>FocusFlow // Todo</title>
-    <!-- Google Fonts for a premium feel -->
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
+    <title>FocusFlow // Productivity Hub</title>
+    <!-- Fonts & Icons -->
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/lucide@latest"></script>
+    
     <style>
-        /* 1. CSS VARIABLES - The "Perfect" Color Palette */
         :root {
-            --bg-color: #f8f9fa;        /* Soft Off-White */
-            --card-bg: #ffffff;
-            --text-main: #2d3436;       /* Soft Charcoal */
-            --text-muted: #636e72;
-            --accent: #6c5ce7;          /* Vibrant Modern Violet */
-            --accent-hover: #a29bfe;
-            --danger: #ff7675;          /* Soft Red */
-            --success: #00b894;         /* Mint Green */
-            --shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
-            --radius: 16px;
+            --primary: #6366f1;
+            --primary-hover: #4f46e5;
+            --bg-dark: #0f172a;
+            --card-glass: rgba(255, 255, 255, 0.08);
+            --border-glass: rgba(255, 255, 255, 0.12);
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --radius: 20px;
         }
 
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
-            font-family: 'Inter', sans-serif;
+            font-family: 'Plus Jakarta Sans', sans-serif;
         }
 
         body {
-            background-color: var(--bg-color);
+            background-color: var(--bg-dark);
             color: var(--text-main);
-            display: flex;
-            justify-content: center;
-            align-items: center;
             min-height: 100vh;
-            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            overflow-x: hidden;
         }
 
-        /* 2. UI STRUCTURE & LAYOUT */
-        .container {
+        /* --- CANVAS DROP BALL BACKGROUND --- */
+        #bg-canvas {
+            position: fixed;
+            top: 0;
+            left: 0;
             width: 100%;
-            max-width: 450px;
-            background: var(--card-bg);
-            padding: 40px;
-            border-radius: var(--radius);
-            box-shadow: var(--shadow);
-            transition: transform 0.3s ease;
+            height: 100%;
+            z-index: -1;
+            background: radial-gradient(circle at top right, #1e1b4b, #0f172a);
         }
 
+        /* --- HEADER --- */
         header {
-            margin-bottom: 30px;
+            padding: 30px 5%;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid var(--border-glass);
+            z-index: 10;
+        }
+
+        .brand h1 {
+            font-size: 1.5rem;
+            font-weight: 700;
+            letter-spacing: -0.5px;
+            background: linear-gradient(to right, #818cf8, #c084fc);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .header-info {
+            text-align: right;
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+
+        #time {
+            font-size: 1.4rem;
+            font-weight: 600;
+            color: #fff;
+        }
+
+        /* --- DASHBOARD GRID --- */
+        main {
+            display: grid;
+            grid-template-columns: 320px 1fr 320px;
+            gap: 25px;
+            padding: 40px 5%;
+            max-width: 1600px;
+            margin: 0 auto;
+            width: 100%;
+            flex: 1;
+        }
+
+        @media (max-width: 1200px) {
+            main { grid-template-columns: 1fr 1.5fr; }
+            .notes-panel { grid-column: span 2; }
+        }
+
+        @media (max-width: 850px) {
+            main { grid-template-columns: 1fr; }
+            .notes-panel, .calendar-panel { grid-column: span 1; }
+        }
+
+        .panel {
+            background: var(--card-glass);
+            backdrop-filter: blur(20px);
+            border-radius: var(--radius);
+            padding: 25px;
+            border: 1px solid var(--border-glass);
+            box-shadow: 0 20px 50px rgba(0,0,0,0.3);
+        }
+
+        h2 {
+            font-size: 1rem;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            color: var(--text-muted);
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        /* --- CALENDAR --- */
+        .calendar-grid {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 5px;
             text-align: center;
         }
 
-        h1 {
-            font-weight: 600;
-            font-size: 1.8rem;
-            letter-spacing: -0.5px;
+        .cal-day { font-size: 0.75rem; color: var(--primary); font-weight: 700; padding-bottom: 10px; }
+        .cal-date {
+            padding: 10px 0;
+            font-size: 0.85rem;
+            border-radius: 10px;
+            transition: 0.3s;
+            cursor: default;
         }
 
-        h1 span {
-            color: var(--accent);
+        .cal-date.active {
+            background: var(--primary);
+            color: white;
+            box-shadow: 0 0 20px rgba(99, 102, 241, 0.4);
         }
 
+        /* --- TODO LIST --- */
         .input-group {
             display: flex;
             gap: 10px;
-            margin-bottom: 25px;
+            margin-bottom: 20px;
         }
 
-        input[type="text"] {
+        input {
             flex: 1;
-            padding: 14px 18px;
-            border: 2px solid #edf2f7;
+            background: rgba(255,255,255,0.05);
+            border: 1px solid var(--border-glass);
             border-radius: 12px;
-            outline: none;
-            font-size: 1rem;
-            transition: border-color 0.3s ease;
-        }
-
-        input[type="text"]:focus {
-            border-color: var(--accent);
-        }
-
-        button#add-btn {
-            background: var(--accent);
+            padding: 12px 15px;
             color: white;
+            outline: none;
+            transition: 0.3s;
+        }
+
+        input:focus { border-color: var(--primary); background: rgba(255,255,255,0.1); }
+
+        .btn-icon {
+            background: var(--primary);
             border: none;
-            padding: 0 20px;
+            color: white;
+            width: 45px;
+            height: 45px;
             border-radius: 12px;
             cursor: pointer;
-            font-weight: 600;
-            transition: all 0.3s ease;
-        }
-
-        button#add-btn:hover {
-            background: var(--accent-hover);
-            transform: translateY(-2px);
-        }
-
-        /* 3. TODO ITEM STYLING (The "UX" Part) */
-        ul {
-            list-style: none;
-        }
-
-        li {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            background: #fff;
-            padding: 14px 0;
-            border-bottom: 1px solid #f1f1f1;
-            animation: fadeIn 0.4s ease forwards;
-        }
-
-        li:last-child {
-            border-bottom: none;
-        }
-
-        .todo-content {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            cursor: pointer;
-            flex: 1;
-        }
-
-        .checkbox {
-            width: 22px;
-            height: 22px;
-            border: 2px solid var(--accent);
-            border-radius: 6px;
             display: flex;
             align-items: center;
             justify-content: center;
-            transition: all 0.2s ease;
+            transition: 0.3s;
         }
 
-        li.completed .checkbox {
-            background: var(--success);
-            border-color: var(--success);
+        .btn-icon:hover { background: var(--primary-hover); transform: scale(1.05); }
+
+        .todo-item {
+            background: rgba(255,255,255,0.03);
+            border-radius: 14px;
+            padding: 15px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 10px;
+            border: 1px solid transparent;
+            transition: 0.3s;
+            animation: slideIn 0.3s ease;
         }
 
-        li.completed .checkbox::after {
-            content: '✓';
-            color: white;
-            font-size: 12px;
-            font-weight: bold;
+        .todo-item:hover { border-color: var(--border-glass); background: rgba(255,255,255,0.06); }
+
+        .todo-item.completed { opacity: 0.5; }
+        .todo-item.completed span { text-decoration: line-through; }
+
+        /* --- STICKY NOTES --- */
+        .notes-grid {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
         }
 
-        .todo-text {
-            font-size: 1rem;
-            transition: all 0.3s ease;
+        .note {
+            padding: 18px;
+            border-radius: 16px;
+            min-height: 120px;
+            color: #1e293b;
+            position: relative;
         }
 
-        li.completed .todo-text {
-            text-decoration: line-through;
-            color: var(--text-muted);
-            opacity: 0.6;
-        }
-
-        .delete-btn {
-            color: var(--text-muted);
-            cursor: pointer;
-            padding: 5px;
-            font-size: 0.9rem;
-            transition: color 0.2s;
+        .note textarea {
+            background: transparent;
             border: none;
-            background: none;
+            width: 100%;
+            height: 80px;
+            resize: none;
+            outline: none;
+            font-weight: 600;
+            color: inherit;
         }
 
-        .delete-btn:hover {
-            color: var(--danger);
+        .note-header {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 10px;
         }
 
-        @keyframes fadeIn {
+        /* --- FOOTER --- */
+        footer {
+            padding: 30px;
+            text-align: center;
+            border-top: 1px solid var(--border-glass);
+            background: rgba(15, 23, 42, 0.8);
+            backdrop-filter: blur(10px);
+        }
+
+        footer p {
+            color: var(--text-muted);
+            font-size: 0.85rem;
+            letter-spacing: 1px;
+        }
+
+        footer b { color: var(--primary); }
+
+        @keyframes slideIn {
             from { opacity: 0; transform: translateY(10px); }
             to { opacity: 1; transform: translateY(0); }
         }
 
-        /* Stats bar */
-        .footer-stats {
-            margin-top: 25px;
-            font-size: 0.85rem;
-            color: var(--text-muted);
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
     </style>
 </head>
 <body>
 
-    <div class="container">
-        <header>
-            <h1>Focus<span>Flow</span></h1>
-        </header>
+    <canvas id="bg-canvas"></canvas>
 
-        <div class="input-group">
-            <input type="text" id="todo-input" placeholder="What needs to be done?" autocomplete="off">
-            <button id="add-btn">Add</button>
+    <header>
+        <div class="brand">
+            <h1>FocusFlow</h1>
+        </div>
+        <div class="header-info">
+            <div>
+                <div id="time">00:00:00</div>
+                <div id="date" style="color: var(--text-muted); font-size: 0.8rem; font-weight: 600;">LOADING...</div>
+            </div>
+            <i data-lucide="shield-check" style="color: var(--primary)"></i>
+        </div>
+    </header>
+
+    <main>
+        <!-- Panel 1: Calendar -->
+        <div class="panel calendar-panel">
+            <h2><i data-lucide="calendar" size="18"></i> Schedule</h2>
+            <div class="calendar-grid" id="calendar">
+                <div class="cal-day">S</div><div class="cal-day">M</div>
+                <div class="cal-day">T</div><div class="cal-day">W</div>
+                <div class="cal-day">T</div><div class="cal-day">F</div>
+                <div class="cal-day">S</div>
+            </div>
         </div>
 
-        <ul id="todo-list">
-            <!-- Items will appear here -->
-        </ul>
-
-        <div class="footer-stats">
-            <span id="items-left">0 tasks pending</span>
-            <button class="delete-btn" onclick="clearAll()" style="font-size: 0.75rem;">Clear All</button>
+        <!-- Panel 2: Todo -->
+        <div class="panel">
+            <h2><i data-lucide="list-todo" size="18"></i> Active Tasks</h2>
+            <div class="input-group">
+                <input type="text" id="todo-input" placeholder="Plan your next move...">
+                <button class="btn-icon" onclick="addTodo()">
+                    <i data-lucide="plus"></i>
+                </button>
+            </div>
+            <div id="todo-list"></div>
         </div>
-    </div>
+
+        <!-- Panel 3: Notes -->
+        <div class="panel notes-panel">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                <h2><i data-lucide="sticky-note" size="18"></i> Fragments</h2>
+                <div style="display: flex; gap: 8px;">
+                    <div onclick="addNote('#fef08a')" style="width:12px; height:12px; border-radius:50%; background:#fef08a; cursor:pointer"></div>
+                    <div onclick="addNote('#bfdbfe')" style="width:12px; height:12px; border-radius:50%; background:#bfdbfe; cursor:pointer"></div>
+                    <div onclick="addNote('#bbf7d0')" style="width:12px; height:12px; border-radius:50%; background:#bbf7d0; cursor:pointer"></div>
+                </div>
+            </div>
+            <div class="notes-grid" id="notes-container"></div>
+        </div>
+    </main>
+
+    <footer>
+        <p><b>FocusFlow</b> // Developed and Deployed by <b>Md Istiak Islam</b></p>
+    </footer>
 
     <script>
-        // 4. JAVASCRIPT LOGIC & BROWSER STORAGE
-        const input = document.getElementById('todo-input');
-        const addBtn = document.getElementById('add-btn');
-        const todoList = document.getElementById('todo-list');
-        const statsText = document.getElementById('items-left');
+        // --- 1. ENHANCED DROP BALL ANIMATION ---
+        const canvas = document.getElementById('bg-canvas');
+        const ctx = canvas.getContext('2d');
+        let particles = [];
 
-        let todos = JSON.parse(localStorage.getItem('my_todos')) || [];
-
-        // Initialization
-        window.onload = () => {
-            renderTodos();
-        };
-
-        function saveToStorage() {
-            localStorage.setItem('my_todos', JSON.stringify(todos));
-            updateStats();
+        function initCanvas() {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
         }
+        window.addEventListener('resize', initCanvas);
+        initCanvas();
 
-        function updateStats() {
-            const pending = todos.filter(t => !t.completed).length;
-            statsText.innerText = `${pending} task${pending !== 1 ? 's' : ''} pending`;
-        }
-
-        function renderTodos() {
-            todoList.innerHTML = '';
-            todos.forEach((todo, index) => {
-                const li = document.createElement('li');
-                if (todo.completed) li.classList.add('completed');
-
-                li.innerHTML = `
-                    <div class="todo-content" onclick="toggleTodo(${index})">
-                        <div class="checkbox"></div>
-                        <span class="todo-text">${todo.text}</span>
-                    </div>
-                    <button class="delete-btn" onclick="deleteTodo(${index})">Delete</button>
-                `;
-                todoList.appendChild(li);
-            });
-            updateStats();
-        }
-
-        function addTodo() {
-            const text = input.value.trim();
-            if (text === '') return;
-
-            todos.push({ text, completed: false });
-            input.value = '';
-            saveToStorage();
-            renderTodos();
-        }
-
-        function toggleTodo(index) {
-            todos[index].completed = !todos[index].completed;
-            saveToStorage();
-            renderTodos();
-        }
-
-        function deleteTodo(index) {
-            todos.splice(index, 1);
-            saveToStorage();
-            renderTodos();
-        }
-
-        function clearAll() {
-            if(confirm("Clear all tasks?")) {
-                todos = [];
-                saveToStorage();
-                renderTodos();
+        class Particle {
+            constructor() {
+                this.init();
+            }
+            init() {
+                this.x = Math.random() * canvas.width;
+                this.y = -50 - (Math.random() * canvas.height);
+                this.radius = Math.random() * 4 + 2;
+                this.speed = Math.random() * 1.5 + 0.5;
+                this.alpha = Math.random() * 0.3;
+            }
+            update() {
+                this.y += this.speed;
+                if (this.y > canvas.height + 10) this.init();
+            }
+            draw() {
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
+                ctx.fillStyle = `rgba(129, 140, 248, ${this.alpha})`;
+                ctx.fill();
             }
         }
 
-        // Event Listeners
-        addBtn.addEventListener('click', addTodo);
-        input.addEventListener('keypress', (e) => {
-            if (e.key === 'Enter') addTodo();
-        });
+        for (let i = 0; i < 60; i++) particles.push(new Particle());
+
+        function animate() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            particles.forEach(p => { p.update(); p.draw(); });
+            requestAnimationFrame(animate);
+        }
+        animate();
+
+        // --- 2. CLOCK & DATE ---
+        function updateTime() {
+            const now = new Date();
+            document.getElementById('time').innerText = now.toLocaleTimeString([], { hour12: false });
+            document.getElementById('date').innerText = now.toLocaleDateString(undefined, { weekday: 'long', month: 'short', day: 'numeric' }).toUpperCase();
+        }
+        setInterval(updateTime, 1000);
+        updateTime();
+
+        // --- 3. CALENDAR ---
+        function generateCalendar() {
+            const cal = document.getElementById('calendar');
+            const now = new Date();
+            const daysInMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate();
+            const startDay = new Date(now.getFullYear(), now.getMonth(), 1).getDay();
+
+            for (let i = 0; i < startDay; i++) cal.innerHTML += `<div></div>`;
+            for (let d = 1; d <= daysInMonth; d++) {
+                const isToday = d === now.getDate() ? 'active' : '';
+                cal.innerHTML += `<div class="cal-date ${isToday}">${d}</div>`;
+            }
+        }
+        generateCalendar();
+
+        // --- 4. TODO (Storage) ---
+        let tasks = JSON.parse(localStorage.getItem('ff_tasks')) || [];
+        function renderTasks() {
+            localStorage.setItem('ff_tasks', JSON.stringify(tasks));
+            const list = document.getElementById('todo-list');
+            list.innerHTML = tasks.map((t, i) => `
+                <div class="todo-item ${t.done ? 'completed' : ''}">
+                    <i data-lucide="${t.done ? 'check-circle' : 'circle'}" onclick="toggleTask(${i})" style="cursor:pointer; color:var(--primary)"></i>
+                    <span style="flex:1">${t.text}</span>
+                    <i data-lucide="trash-2" size="16" onclick="deleteTask(${i})" style="cursor:pointer; color:var(--text-muted)"></i>
+                </div>
+            `).join('');
+            lucide.createIcons();
+        }
+
+        function addTodo() {
+            const input = document.getElementById('todo-input');
+            if (!input.value) return;
+            tasks.unshift({ text: input.value, done: false });
+            input.value = '';
+            renderTasks();
+        }
+
+        function toggleTask(i) { tasks[i].done = !tasks[i].done; renderTasks(); }
+        function deleteTask(i) { tasks.splice(i, 1); renderTasks(); }
+
+        // --- 5. NOTES (Storage) ---
+        let notes = JSON.parse(localStorage.getItem('ff_notes')) || [];
+        function renderNotes() {
+            localStorage.setItem('ff_notes', JSON.stringify(notes));
+            const container = document.getElementById('notes-container');
+            container.innerHTML = notes.map((n, i) => `
+                <div class="note" style="background: ${n.color}">
+                    <div class="note-header">
+                        <i data-lucide="hash" size="14"></i>
+                        <i data-lucide="x" size="14" onclick="deleteNote(${i})" style="cursor:pointer"></i>
+                    </div>
+                    <textarea oninput="updateNote(${i}, this.value)" placeholder="Brainstorm...">${n.text}</textarea>
+                </div>
+            `).join('');
+            lucide.createIcons();
+        }
+
+        function addNote(color) { notes.unshift({ text: '', color: color }); renderNotes(); }
+        function updateNote(i, val) { notes[i].text = val; localStorage.setItem('ff_notes', JSON.stringify(notes)); }
+        function deleteNote(i) { notes.splice(i, 1); renderNotes(); }
+
+        // Initialize
+        renderTasks();
+        renderNotes();
+        lucide.createIcons();
+
+        // Enter key listeners
+        document.getElementById('todo-input').addEventListener('keypress', (e) => { if(e.key === 'Enter') addTodo(); });
+
     </script>
 </body>
 </html>
