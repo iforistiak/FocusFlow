@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FocusFlow // Todo</title>
+    <!-- Google Fonts for a premium feel -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
+    <style>
+        /* 1. CSS VARIABLES - The "Perfect" Color Palette */
+        :root {
+            --bg-color: #f8f9fa;        /* Soft Off-White */
+            --card-bg: #ffffff;
+            --text-main: #2d3436;       /* Soft Charcoal */
+            --text-muted: #636e72;
+            --accent: #6c5ce7;          /* Vibrant Modern Violet */
+            --accent-hover: #a29bfe;
+            --danger: #ff7675;          /* Soft Red */
+            --success: #00b894;         /* Mint Green */
+            --shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
+            --radius: 16px;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Inter', sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        /* 2. UI STRUCTURE & LAYOUT */
+        .container {
+            width: 100%;
+            max-width: 450px;
+            background: var(--card-bg);
+            padding: 40px;
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
+            transition: transform 0.3s ease;
+        }
+
+        header {
+            margin-bottom: 30px;
+            text-align: center;
+        }
+
+        h1 {
+            font-weight: 600;
+            font-size: 1.8rem;
+            letter-spacing: -0.5px;
+        }
+
+        h1 span {
+            color: var(--accent);
+        }
+
+        .input-group {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 25px;
+        }
+
+        input[type="text"] {
+            flex: 1;
+            padding: 14px 18px;
+            border: 2px solid #edf2f7;
+            border-radius: 12px;
+            outline: none;
+            font-size: 1rem;
+            transition: border-color 0.3s ease;
+        }
+
+        input[type="text"]:focus {
+            border-color: var(--accent);
+        }
+
+        button#add-btn {
+            background: var(--accent);
+            color: white;
+            border: none;
+            padding: 0 20px;
+            border-radius: 12px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+
+        button#add-btn:hover {
+            background: var(--accent-hover);
+            transform: translateY(-2px);
+        }
+
+        /* 3. TODO ITEM STYLING (The "UX" Part) */
+        ul {
+            list-style: none;
+        }
+
+        li {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background: #fff;
+            padding: 14px 0;
+            border-bottom: 1px solid #f1f1f1;
+            animation: fadeIn 0.4s ease forwards;
+        }
+
+        li:last-child {
+            border-bottom: none;
+        }
+
+        .todo-content {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            cursor: pointer;
+            flex: 1;
+        }
+
+        .checkbox {
+            width: 22px;
+            height: 22px;
+            border: 2px solid var(--accent);
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s ease;
+        }
+
+        li.completed .checkbox {
+            background: var(--success);
+            border-color: var(--success);
+        }
+
+        li.completed .checkbox::after {
+            content: '✓';
+            color: white;
+            font-size: 12px;
+            font-weight: bold;
+        }
+
+        .todo-text {
+            font-size: 1rem;
+            transition: all 0.3s ease;
+        }
+
+        li.completed .todo-text {
+            text-decoration: line-through;
+            color: var(--text-muted);
+            opacity: 0.6;
+        }
+
+        .delete-btn {
+            color: var(--text-muted);
+            cursor: pointer;
+            padding: 5px;
+            font-size: 0.9rem;
+            transition: color 0.2s;
+            border: none;
+            background: none;
+        }
+
+        .delete-btn:hover {
+            color: var(--danger);
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Stats bar */
+        .footer-stats {
+            margin-top: 25px;
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <header>
+            <h1>Focus<span>Flow</span></h1>
+        </header>
+
+        <div class="input-group">
+            <input type="text" id="todo-input" placeholder="What needs to be done?" autocomplete="off">
+            <button id="add-btn">Add</button>
+        </div>
+
+        <ul id="todo-list">
+            <!-- Items will appear here -->
+        </ul>
+
+        <div class="footer-stats">
+            <span id="items-left">0 tasks pending</span>
+            <button class="delete-btn" onclick="clearAll()" style="font-size: 0.75rem;">Clear All</button>
+        </div>
+    </div>
+
+    <script>
+        // 4. JAVASCRIPT LOGIC & BROWSER STORAGE
+        const input = document.getElementById('todo-input');
+        const addBtn = document.getElementById('add-btn');
+        const todoList = document.getElementById('todo-list');
+        const statsText = document.getElementById('items-left');
+
+        let todos = JSON.parse(localStorage.getItem('my_todos')) || [];
+
+        // Initialization
+        window.onload = () => {
+            renderTodos();
+        };
+
+        function saveToStorage() {
+            localStorage.setItem('my_todos', JSON.stringify(todos));
+            updateStats();
+        }
+
+        function updateStats() {
+            const pending = todos.filter(t => !t.completed).length;
+            statsText.innerText = `${pending} task${pending !== 1 ? 's' : ''} pending`;
+        }
+
+        function renderTodos() {
+            todoList.innerHTML = '';
+            todos.forEach((todo, index) => {
+                const li = document.createElement('li');
+                if (todo.completed) li.classList.add('completed');
+
+                li.innerHTML = `
+                    <div class="todo-content" onclick="toggleTodo(${index})">
+                        <div class="checkbox"></div>
+                        <span class="todo-text">${todo.text}</span>
+                    </div>
+                    <button class="delete-btn" onclick="deleteTodo(${index})">Delete</button>
+                `;
+                todoList.appendChild(li);
+            });
+            updateStats();
+        }
+
+        function addTodo() {
+            const text = input.value.trim();
+            if (text === '') return;
+
+            todos.push({ text, completed: false });
+            input.value = '';
+            saveToStorage();
+            renderTodos();
+        }
+
+        function toggleTodo(index) {
+            todos[index].completed = !todos[index].completed;
+            saveToStorage();
+            renderTodos();
+        }
+
+        function deleteTodo(index) {
+            todos.splice(index, 1);
+            saveToStorage();
+            renderTodos();
+        }
+
+        function clearAll() {
+            if(confirm("Clear all tasks?")) {
+                todos = [];
+                saveToStorage();
+                renderTodos();
+            }
+        }
+
+        // Event Listeners
+        addBtn.addEventListener('click', addTodo);
+        input.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') addTodo();
+        });
+    </script>
+</body>
+</html>
