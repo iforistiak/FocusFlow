@@ -1,0 +1,15 @@
+{
+  "name": "focus-flow",
+  "version": "1.0.0",
+  "description": "FocusFlow // Productivity Hub",
+  "main": "server.js",
+  "type": "module",
+  "scripts": {
+    "dev": "node server.js",
+    "build": "echo 'No build step needed'",
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "express": "^4.21.2"
+  }
+}

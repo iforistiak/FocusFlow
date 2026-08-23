@@ -1,0 +1,8 @@
+{
+  "name": "FocusFlow",
+  "description": "FocusFlow productivity hub featuring schedule calendar, active task list, sticky note fragments, and ambient canvas particle background.",
+  "requestFramePermissions": [],
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}
